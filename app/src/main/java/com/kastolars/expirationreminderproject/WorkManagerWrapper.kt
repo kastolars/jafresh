@@ -2,21 +2,22 @@ package com.kastolars.expirationreminderproject
 
 import android.content.Context
 import android.util.Log
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
+import androidx.lifecycle.LiveData
+import androidx.work.*
 import com.google.common.util.concurrent.ListenableFuture
+import com.kastolars.expirationreminderproject.models.Item
 import java.time.Duration
 import java.util.*
 
 class WorkManagerWrapper(context: Context) {
 
     private val tag = "exprem" + WorkManagerWrapper::class.simpleName
-    private val workManager = WorkManager.getInstance(context)
+    private val mWorkManager = WorkManager.getInstance(context)
 
-
-    fun enqueueReminders(item: Item): ArrayList<UUID> {
+    fun enqueueReminders(
+        item: Item,
+        notificationTag: String
+    ): ArrayList<UUID> {
         Log.v(tag, "enqueueReminders called")
         val cal = Calendar.getInstance(TimeZone.getDefault())
 
@@ -25,6 +26,8 @@ class WorkManagerWrapper(context: Context) {
         // Set calendar to expiration date
         val expirationDate = item.expirationDate
         cal.time = expirationDate
+        cal.set(Calendar.HOUR_OF_DAY, 6)
+        cal.set(Calendar.MINUTE, 0)
 
         // Collect all the workRequest UUIDs
         val workRequestIds = ArrayList<UUID>()
@@ -33,7 +36,7 @@ class WorkManagerWrapper(context: Context) {
         arrayOf(0, -1, -1, -5).forEach {
             cal.add(Calendar.DATE, it)
             if (cal.time.after(today)) {
-                val id = enqueueReminder(today, cal.time, item)
+                val id = enqueueReminder(today, cal.time, item, notificationTag)
                 workRequestIds.add(id)
             }
         }
@@ -44,8 +47,11 @@ class WorkManagerWrapper(context: Context) {
     private fun enqueueReminder(
         today: Date,
         futureDate: Date,
-        item: Item
+        item: Item,
+        notificationTag: String
     ): UUID {
+        Log.v(tag, "enqueueReminder called")
+        Log.d(tag, "Reminder will be executed on $futureDate")
         val differenceInMillis = futureDate.time - today.time
         val delay = Duration.ofMillis(differenceInMillis)
         val data = Data.Builder()
@@ -55,12 +61,34 @@ class WorkManagerWrapper(context: Context) {
         val oneTimeWorkRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
             .setInitialDelay(delay)
             .setInputData(data)
+            .addTag(notificationTag)
             .build()
-        workManager.enqueue(oneTimeWorkRequest)
+        mWorkManager.enqueue(oneTimeWorkRequest)
         return oneTimeWorkRequest.id
     }
 
     fun getWorkInfoById(id: UUID): ListenableFuture<WorkInfo> {
-        return workManager.getWorkInfoById(id)
+        return mWorkManager.getWorkInfoById(id)
+    }
+
+    fun getCount(workTag: String): Int {
+        return mWorkManager.getWorkInfosByTag(workTag).get().size
+    }
+
+    fun getWorkInfoByIdLiveData(uuid: UUID): LiveData<WorkInfo> {
+        return mWorkManager.getWorkInfoByIdLiveData(uuid)
+    }
+
+    fun getWorkInfosByTag(workTag: String): ListenableFuture<MutableList<WorkInfo>> {
+        return mWorkManager.getWorkInfosByTag(workTag)
+
+    }
+
+    fun cancelWorkById(id: UUID): Operation {
+        return mWorkManager.cancelWorkById(id)
+    }
+
+    fun clear(): Operation {
+        return mWorkManager.pruneWork()
     }
 }

@@ -1,11 +1,11 @@
-package com.kastolars.expirationreminderproject
+package com.kastolars.expirationreminderproject.models
 
 import android.content.ContentValues
 import android.database.Cursor
 import java.time.Instant
 import java.util.*
 
-class Item(val uuid: UUID, val name: String, val expirationDate: Date) : Loadable{
+class Item(val uuid: UUID, val name: String, val expirationDate: Date) {
 
     constructor(cursor: Cursor) : this(
         UUID.fromString(cursor.getString(cursor.getColumnIndex("uuid"))),
@@ -34,15 +34,11 @@ class Item(val uuid: UUID, val name: String, val expirationDate: Date) : Loadabl
     }
 
     // Create
-    override fun getContentValues(): ContentValues {
+    fun getContentValues(): ContentValues {
         val cv = ContentValues()
         cv.put("uuid", uuid.toString())
         cv.put("name", name)
         cv.put("expiration_date", expirationDate.time)
         return cv
-    }
-
-    override fun uuid(): UUID {
-        return uuid
     }
 }

@@ -1,12 +1,15 @@
 package com.kastolars.expirationreminderproject
 
-import android.util.Log
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.kastolars.expirationreminderproject.models.Item
 import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class ItemListAdapter(private val items: ArrayList<Item>) :
     RecyclerView.Adapter<ItemListAdapter.ItemViewHolder>() {
@@ -25,8 +28,6 @@ class ItemListAdapter(private val items: ArrayList<Item>) :
     }
 
     override fun getItemCount(): Int {
-        Log.v(tag, "getItemCount called")
-        Log.d(tag, "Item count: ${items.size}")
         return items.size
     }
 
@@ -34,9 +35,25 @@ class ItemListAdapter(private val items: ArrayList<Item>) :
         val item = items[position]
         val name = item.name
         val date = item.expirationDate
-        val formatter: SimpleDateFormat = SimpleDateFormat("MM-dd-yyyy")
+        val formatter = SimpleDateFormat("MM-dd-yyyy:HH")
+
+        val today = Calendar.getInstance(TimeZone.getDefault()).time
+        val millisBetween = date.time - today.time
+        val daysBetween = TimeUnit.DAYS.convert(millisBetween, TimeUnit.MILLISECONDS)
+        val color = when {
+            daysBetween > 1 -> {
+                Color.parseColor("#00B345")
+            }
+            daysBetween > 0 -> {
+                Color.parseColor("#FFC107")
+            }
+            else -> {
+                Color.parseColor("#FF5722")
+            }
+        }
 
         holder.nameView.text = name
         holder.dateView.text = formatter.format(date)
+        holder.dateView.setTextColor(color)
     }
 }
