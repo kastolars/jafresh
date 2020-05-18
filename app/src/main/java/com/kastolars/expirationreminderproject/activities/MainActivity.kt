@@ -99,6 +99,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
             val intent = Intent(applicationContext, ItemActivity::class.java)
             startActivityForResult(intent, NEW_ITEM)
         }
+
+        // Initialize OCR Launch Button
+        val mOcrLaunchButton: FloatingActionButton = findViewById(R.id.ocr_launch_button)
+        mOcrLaunchButton.setOnClickListener {
+            Log.d(tag, "Floating action button pressed (OCR Launch)")
+            val intent = Intent(applicationContext, OcrCaptureActivity::class.java)
+            startActivityForResult(intent, NEW_ITEM)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -35,7 +35,7 @@ class ItemListAdapter(private val items: ArrayList<Item>) :
         val item = items[position]
         val name = item.name
         val date = item.expirationDate
-        val formatter = SimpleDateFormat("MM-dd-yyyy:HH")
+        val formatter = SimpleDateFormat("M-dd-yyyy", Locale.US)
 
         val today = Calendar.getInstance(TimeZone.getDefault()).time
         val millisBetween = date.time - today.time

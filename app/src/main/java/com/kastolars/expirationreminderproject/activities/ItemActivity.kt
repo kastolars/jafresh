@@ -2,11 +2,13 @@ package com.kastolars.expirationreminderproject.activities
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.animation.Animation
 import android.view.animation.TranslateAnimation
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.kastolars.expirationreminderproject.R
@@ -29,6 +31,18 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         setContentView(R.layout.activity_item)
 
         mEditTextView = findViewById(R.id.edit_text)
+
+        val imm = (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+
+        if (intent != null && intent.extras != null) {
+            Log.v(tag, "Intent exists")
+            year = intent.getIntExtra("year", year)
+            month = intent.getIntExtra("month", month)
+            dayOfMonth = intent.getIntExtra("dayOfMonth", dayOfMonth)
+            Log.v(tag, "$month - $dayOfMonth - $year")
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+            mEditTextView.requestFocus()
+        }
 
         mExpirationDateTextView = findViewById(R.id.current_expiration_date)
         mExpirationDateTextView.text = String.format("%d-%d-%d", month + 1, dayOfMonth, year)
@@ -62,15 +76,21 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         mDoneButton.setOnClickListener {
             Log.v(tag, "Done button clicked")
             val intent = Intent()
+            if (mEditTextView.text.isEmpty()) {
+                Toast.makeText(this, "Item needs a name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             intent.putExtra("name", mEditTextView.text.toString())
-            cal.set(year, month, dayOfMonth, 6, 0)
-            // TODO: also make sure the item has a name
+            cal.set(year, month, dayOfMonth, 5, 0, 0)
+
             if (!cal.time.before(Calendar.getInstance(TimeZone.getDefault()).time)) {
                 intent.putExtra("date", cal.time.time)
                 setResult(Activity.RESULT_OK, intent)
+                // hide keyboard
+                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 finish()
             } else {
-                Toast.makeText(this, "Can't use that expiration date", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Item has already expired", Toast.LENGTH_SHORT).show()
             }
         }
     }
