@@ -117,8 +117,8 @@ class InstrumentedTests {
     fun testNotification() {
         val ctx = mMainActivityRule.activity.applicationContext
         val workManager = WorkManager.getInstance(ctx)
-//        workManager.cancelAllWork()
-//        workManager.pruneWork()
+        workManager.cancelAllWork()
+        workManager.pruneWork()
         var data = Data.Builder()
             .putString("uuid", "123")
             .putString("name", "test")
@@ -129,7 +129,7 @@ class InstrumentedTests {
             .addTag("Test")
             .build()
         workManager.enqueue(oneTimeWorkRequest)
-//        Thread.sleep(1000)
+        Thread.sleep(1000)
         data = Data.Builder()
             .putString("uuid", "123")
             .putString("name", "test2")
@@ -140,8 +140,8 @@ class InstrumentedTests {
             .addTag("Test")
             .build()
         workManager.enqueue(oneTimeWorkRequest)
-//        assertEquals(2, workManager.getWorkInfosByTag("Test").get().size)
-//        Thread.sleep(5000)
+        assertEquals(2, workManager.getWorkInfosByTag("Test").get().size)
+        Thread.sleep(5000)
     }
 
     @Test
