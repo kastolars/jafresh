@@ -18,7 +18,6 @@ import com.google.android.gms.vision.text.TextBlock
 import com.google.android.gms.vision.text.TextRecognizer
 import com.kastolars.expirationreminderproject.R
 import java.io.IOException
-import java.lang.Exception
 import java.util.*
 
 

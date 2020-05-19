@@ -1,19 +1,24 @@
 package com.kastolars.expirationreminderproject.activities
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.animation.Animation
 import android.view.animation.AnimationSet
 import android.view.animation.LayoutAnimationController
 import android.view.animation.TranslateAnimation
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
@@ -27,6 +32,7 @@ import com.kastolars.expirationreminderproject.*
 import com.kastolars.expirationreminderproject.models.Item
 import com.kastolars.expirationreminderproject.models.Notification
 import java.util.*
+import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity(), LifecycleOwner,
     WorkInfoStateHandler {
@@ -159,7 +165,33 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
 
             val itemCount = mAdapter.itemCount
             Log.d(tag, "Item count: $itemCount")
+
+            // First time users
+            val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+            val firstStart = prefs.getBoolean("firstStart", true)
+
+            if (firstStart) {
+                showFirstTimeAddItemDialog()
+            }
         }
+    }
+
+    private fun showFirstTimeAddItemDialog() {
+        val img = ImageView(this)
+        img.setImageResource(R.drawable.swipe)
+        AlertDialog.Builder(this)
+            .setTitle("Note")
+            .setMessage("You can swipe right on an item to delete it")
+            .setView(img)
+            .setCancelable(false)
+            .setPositiveButton("Got it") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
+
+        val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean("firstStart", false)
+        editor.apply()
     }
 
     private fun createNotificationChannel() {
@@ -233,15 +265,34 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
                     val view = viewHolder.itemView
                     val p = Paint()
                     p.color = Color.RED
+                    val icon = BitmapFactory.decodeResource(
+                        applicationContext.resources, R.drawable.delete
+                    )
+                    val px =
+                        (16 * (resources.displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
                     if (dX > 0) {
                         c.drawRect(
                             view.left.toFloat(), view.top.toFloat(), dX,
                             view.bottom.toFloat(), p
                         )
+
+                        c.drawBitmap(
+                            icon,
+                            view.left.toFloat() + px,
+                            view.top.toFloat() + (view.bottom - view.top - icon.height) / 2,
+                            p
+                        )
                     } else {
                         c.drawRect(
                             view.right + dX, view.top.toFloat(),
                             view.right.toFloat(), view.bottom.toFloat(), p
+                        )
+
+                        c.drawBitmap(
+                            icon,
+                            view.right.toFloat() - px - icon.width.toFloat(),
+                            view.top.toFloat() + (view.bottom - view.top - icon.height) / 2,
+                            p
                         )
                     }
                 }

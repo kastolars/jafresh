@@ -1,6 +1,7 @@
 package com.kastolars.expirationreminderproject.activities
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -88,7 +89,16 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
                 setResult(Activity.RESULT_OK, intent)
                 // hide keyboard
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
-                finish()
+
+                // First time users
+                val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+                val firstItem = prefs.getBoolean("firstItem", true)
+
+                if (firstItem) {
+                    showFirstTimeAddItemDialog()
+                } else {
+                    finish()
+                }
             } else {
                 Toast.makeText(this, "Item has already expired", Toast.LENGTH_SHORT).show()
             }
@@ -101,5 +111,21 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         this.month = month
         this.dayOfMonth = dayOfMonth
         mExpirationDateTextView.text = String.format("%d-%d-%d", month + 1, dayOfMonth, year)
+    }
+
+    private fun showFirstTimeAddItemDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Note")
+            .setCancelable(false)
+            .setMessage("Reminders are set for one week prior, two days prior, one day prior, and day of expiration.")
+            .setPositiveButton("Got it") { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }.create().show()
+
+        val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean("firstItem", false)
+        editor.apply()
     }
 }
