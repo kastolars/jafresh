@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.graphics.*
 import android.os.Bundle
 import android.util.Log
 import android.view.SurfaceHolder
@@ -11,6 +13,7 @@ import android.view.SurfaceView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.util.valueIterator
 import com.google.android.gms.vision.CameraSource
 import com.google.android.gms.vision.Detector
@@ -23,19 +26,31 @@ import java.util.*
 
 class OcrCaptureActivity : AppCompatActivity() {
 
+    lateinit var transparentView: SurfaceView
     lateinit var textRecognizer: TextRecognizer
     private val requestCameraPermissionId = 1001
     lateinit var surfaceView: SurfaceView
     private lateinit var cameraSource: CameraSource
     lateinit var textView: TextView
     private val tag = "exprem" + OcrCaptureActivity::class.java.simpleName
+    lateinit var captureBox: Rect
+    private val deviceWidth = Resources.getSystem().displayMetrics.widthPixels
+    private val deviceHeight = Resources.getSystem().displayMetrics.heightPixels
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ocr_capture)
 
-        surfaceView = findViewById(R.id.surface_view)
         textView = findViewById(R.id.text_view)
+
+        val left = deviceWidth / 6
+        val top = (deviceHeight / 2) - 200
+        val right = left + (deviceWidth / 6) * 4
+        val bottom = top + 200
+        captureBox = Rect(left, top, right, bottom)
+
+        surfaceView = findViewById(R.id.surface_view)
 
         textRecognizer = TextRecognizer.Builder(applicationContext).build()
         if (!textRecognizer.isOperational) {
@@ -47,19 +62,68 @@ class OcrCaptureActivity : AppCompatActivity() {
                 .setRequestedFps(2.0f)
                 .setAutoFocusEnabled(true)
                 .build()
+
             surfaceView.holder.addCallback(SurfaceCallback())
             textRecognizer.setProcessor(OcrProcessor())
+
+            transparentView = findViewById(R.id.transparent_view)
+            transparentView.holder.addCallback(SurfaceCallback())
+            transparentView.holder.setFormat(PixelFormat.TRANSLUCENT)
+            transparentView.setZOrderMediaOverlay(true)
+
         }
+    }
+
+    private fun draw() {
+        val canvas = transparentView.holder.lockCanvas(null)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.style = Paint.Style.STROKE
+        paint.color = ContextCompat.getColor(applicationContext, R.color.colorPrimary)
+        paint.strokeWidth = 5F
+        canvas.drawRect(captureBox, paint)
+        transparentView.holder.unlockCanvasAndPost(canvas)
     }
 
     inner class OcrProcessor :
         Detector.Processor<TextBlock> {
 
-        private val pattern = "([0-9]{1,2}|[a-zA-Z]{3,})\\W[0-9]{1,2}\\W[0-9]{2,4}"
+        private val pattern = "([0-9]{1,2}|[a-zA-Z]{3,})\\W{0,2}[0-9]{1,2}\\W{0,2}[0-9]{2,4}"
         private val captureRegex = Regex(".*${pattern}.*")
         private val cleanRegex = Regex(pattern)
 
+
         override fun release() {
+        }
+
+        inner class PictureCallback(val item: TextBlock) : CameraSource.PictureCallback {
+            override fun onPictureTaken(p0: ByteArray?) {
+                var extractedText: MatchResult
+                try {
+                    extractedText = extractClean(item.value)!!
+                } catch (e: NullPointerException) {
+                    return
+                }
+                val date = toDate(extractedText.value)
+                if (date != null) {
+                    val intent =
+                        Intent(applicationContext, ItemActivity::class.java)
+                    val cal = Calendar.getInstance(TimeZone.getDefault())
+                    cal.time = date
+                    intent.putExtra("year", cal.get(Calendar.YEAR))
+                    intent.putExtra("month", cal.get(Calendar.MONTH))
+                    intent.putExtra("dayOfMonth", cal.get(Calendar.DATE))
+                    Log.v(
+                        tag,
+                        "${cal.get(Calendar.MONTH)} - ${cal.get(Calendar.DATE)} - ${cal.get(
+                            Calendar.YEAR
+                        )}"
+                    )
+                    startActivityForResult(intent, 1)
+                    cameraSource.release()
+                }
+
+            }
+
         }
 
         override fun receiveDetections(detections: Detector.Detections<TextBlock>?) {
@@ -67,36 +131,13 @@ class OcrCaptureActivity : AppCompatActivity() {
             if (items.size() != 0) {
                 for (item: TextBlock in items.valueIterator()) {
                     if (captureRegex.matches(item.value)) {
-                        cameraSource.takePicture(null, CameraSource.PictureCallback {
-                            var extractedText: MatchResult
-                            try {
-                                extractedText = extractClean(item.value)!!
-                            } catch (e: NullPointerException) {
-                                return@PictureCallback
-                            }
-                            val date = toDate(extractedText.value)
-                            if (date != null) {
-                                val intent = Intent(applicationContext, ItemActivity::class.java)
-                                val cal = Calendar.getInstance(TimeZone.getDefault())
-                                cal.time = date
-                                intent.putExtra("year", cal.get(Calendar.YEAR))
-                                intent.putExtra("month", cal.get(Calendar.MONTH))
-                                intent.putExtra("dayOfMonth", cal.get(Calendar.DATE))
-                                Log.v(
-                                    tag,
-                                    "${cal.get(Calendar.MONTH)} - ${cal.get(Calendar.DATE)} - ${cal.get(
-                                        Calendar.YEAR
-                                    )}"
-                                )
-                                startActivityForResult(intent, 1)
-                                cameraSource.release()
-                            }
-                        })
+                        cameraSource.takePicture(null, PictureCallback(item))
                     }
                 }
             }
 
         }
+
 
         private fun extractClean(capturedText: String): MatchResult? {
             return cleanRegex.find(capturedText)
@@ -111,10 +152,10 @@ class OcrCaptureActivity : AppCompatActivity() {
             var year: Int? = null
             var month: Int? = null
             var dayOfTheMonth: Int? = null
-            val splits = s.split(Regex("\\W"))
+            val splits = s.split(Regex("\\W{1,2}"))
             for (i in splits.indices) {
                 if (splits[i].matches(Regex("[a-zA-z]+"))) {
-                    for (j in 0..12) {
+                    for (j in 0..11) {
                         if (months[j].matches(Regex(splits[i], RegexOption.IGNORE_CASE))) {
                             month = j
                             break
@@ -199,7 +240,9 @@ class OcrCaptureActivity : AppCompatActivity() {
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {
             Log.v(tag, "surfaceDestroyed called")
-            cameraSource.release()
+            if (cameraSource != null) {
+                cameraSource.release()
+            }
             cameraSource.stop()
         }
 
@@ -217,6 +260,9 @@ class OcrCaptureActivity : AppCompatActivity() {
                         requestCameraPermissionId
                     )
                     return
+                }
+                synchronized(surfaceView.holder) {
+                    draw()
                 }
                 cameraSource.start(surfaceView.holder)
             } catch (e: IOException) {
