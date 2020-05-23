@@ -30,7 +30,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.kastolars.expirationreminderproject.*
 import com.kastolars.expirationreminderproject.models.Item
 import com.kastolars.expirationreminderproject.models.Notification
-import com.kastolars.expirationreminderproject.ocrreader.OcrCaptureActivity2
 import java.util.*
 import kotlin.math.roundToInt
 
