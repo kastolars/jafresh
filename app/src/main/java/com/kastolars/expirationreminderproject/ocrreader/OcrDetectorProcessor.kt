@@ -53,7 +53,6 @@ class OcrDetectorProcessor internal constructor(private val graphicOverlay: Grap
             if (item != null && item.value != null) {
                 Log.d("OcrDetectorProcessor", "Text detected! " + item.value)
                 val graphic = OcrGraphic(graphicOverlay, item)
-                if (graphicOverlay.getGraphicAtLocation())
                 graphicOverlay.add(graphic)
             }
         }
