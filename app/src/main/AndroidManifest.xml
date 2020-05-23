@@ -13,7 +13,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ocr.OcrActivity"></activity>
         <activity android:name=".activities.OcrCaptureActivity" />
         <activity android:name=".activities.ItemActivity" />
         <activity android:name=".activities.MainActivity">
@@ -23,6 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ocrreader.OcrCaptureActivity2" />
 
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
