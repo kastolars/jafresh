@@ -17,7 +17,7 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
 
     private val tag = "exprem" + NotificationWorker::class.java.simpleName
-    private val mNotificationTag = "Expiration Reminder"
+    private val mNotificationTag = "JaFresh"
 
     override fun doWork(): Result {
         return try {
@@ -36,8 +36,8 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) :
         val name = inputData.getString("name")
         val message = "This is a reminder about your item $name"
         val notification = NotificationCompat.Builder(applicationContext, mNotificationTag)
-            .setSmallIcon(R.drawable.dining)
-            .setContentTitle("Expiration Reminder")
+            .setSmallIcon(R.drawable.notification)
+            .setContentTitle("JaFresh")
             .setContentText(message)
             .setAutoCancel(true)
             .setColor(Color.GREEN)

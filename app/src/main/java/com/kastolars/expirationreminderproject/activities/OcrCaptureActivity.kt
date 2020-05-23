@@ -5,7 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.graphics.*
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.SurfaceHolder
@@ -13,7 +13,6 @@ import android.view.SurfaceView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.util.valueIterator
 import com.google.android.gms.vision.CameraSource
 import com.google.android.gms.vision.Detector
@@ -42,7 +41,7 @@ class OcrCaptureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ocr_capture)
 
-        textView = findViewById(R.id.text_view)
+//        textView = findViewById(R.id.text_view)
 
         val left = deviceWidth / 6
         val top = (deviceHeight / 2) - 200
@@ -58,31 +57,33 @@ class OcrCaptureActivity : AppCompatActivity() {
         } else {
             cameraSource = CameraSource.Builder(applicationContext, textRecognizer)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(1280, 1024)
-                .setRequestedFps(2.0f)
+                .setRequestedPreviewSize(1980, 1080)
+                .setRequestedFps(30.0f)
                 .setAutoFocusEnabled(true)
                 .build()
+
+
 
             surfaceView.holder.addCallback(SurfaceCallback())
             textRecognizer.setProcessor(OcrProcessor())
 
-            transparentView = findViewById(R.id.transparent_view)
-            transparentView.holder.addCallback(SurfaceCallback())
-            transparentView.holder.setFormat(PixelFormat.TRANSLUCENT)
-            transparentView.setZOrderMediaOverlay(true)
+//            transparentView = findViewById(R.id.transparent_view)
+//            transparentView.holder.addCallback(SurfaceCallback())
+//            transparentView.holder.setFormat(PixelFormat.TRANSLUCENT)
+//            transparentView.setZOrderMediaOverlay(true)
 
         }
     }
 
-    private fun draw() {
-        val canvas = transparentView.holder.lockCanvas(null)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.style = Paint.Style.STROKE
-        paint.color = ContextCompat.getColor(applicationContext, R.color.colorPrimary)
-        paint.strokeWidth = 5F
-        canvas.drawRect(captureBox, paint)
-        transparentView.holder.unlockCanvasAndPost(canvas)
-    }
+//    private fun draw() {
+//        val canvas = transparentView.holder.lockCanvas(null)
+//        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+//        paint.style = Paint.Style.STROKE
+//        paint.color = ContextCompat.getColor(applicationContext, R.color.colorPrimary)
+//        paint.strokeWidth = 5F
+//        canvas.drawRect(captureBox, paint)
+//        transparentView.holder.unlockCanvasAndPost(canvas)
+//    }
 
     inner class OcrProcessor :
         Detector.Processor<TextBlock> {
@@ -240,9 +241,7 @@ class OcrCaptureActivity : AppCompatActivity() {
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {
             Log.v(tag, "surfaceDestroyed called")
-            if (cameraSource != null) {
-                cameraSource.release()
-            }
+            cameraSource.release()
             cameraSource.stop()
         }
 
@@ -261,9 +260,9 @@ class OcrCaptureActivity : AppCompatActivity() {
                     )
                     return
                 }
-                synchronized(surfaceView.holder) {
-                    draw()
-                }
+//                synchronized(surfaceView.holder) {
+//                    draw()
+//                }
                 cameraSource.start(surfaceView.holder)
             } catch (e: IOException) {
                 e.printStackTrace()

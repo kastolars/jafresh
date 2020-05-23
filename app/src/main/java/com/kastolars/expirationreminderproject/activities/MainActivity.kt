@@ -30,13 +30,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.kastolars.expirationreminderproject.*
 import com.kastolars.expirationreminderproject.models.Item
 import com.kastolars.expirationreminderproject.models.Notification
+import com.kastolars.expirationreminderproject.ocrreader.OcrCaptureActivity2
 import java.util.*
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity(), LifecycleOwner,
     WorkInfoStateHandler {
 
-    private val mNotificationTag = "Expiration Reminder"
+    private val mNotificationTag = "JaFresh"
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mAdapter: ItemListAdapter
     private lateinit var mItems: ArrayList<Item>
@@ -112,6 +113,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
             val intent = Intent(applicationContext, OcrCaptureActivity::class.java)
             startActivityForResult(intent, NEW_ITEM)
         }
+
+        // OCR Button 2
+//        val mOcr2Button: FloatingActionButton = findViewById(R.id.ocr2_launch_button)
+//        mOcr2Button.setOnClickListener {
+//            val intent = Intent(applicationContext, OcrCaptureActivity2::class.java)
+//            startActivity(intent)
+//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

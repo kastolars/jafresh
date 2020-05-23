@@ -80,7 +80,7 @@ class InstrumentedTests {
         assertEquals("12-07-2020:06", date)
 
         // Assert on work manager
-        val workTag = "Expiration Reminder"
+        val workTag = "JaFresh"
         val workManager = mMainActivityRule.activity.getWorkManagerWrapper()
         val workRequestCount = workManager.getCount(workTag)
         assertEquals(workRequestCount, 4)
