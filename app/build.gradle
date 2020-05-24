@@ -93,7 +93,7 @@ dependencies {
 
     // Google play services
     implementation 'com.google.android.gms:play-services-vision:20.0.0'
+
     // Mockito
     testImplementation 'org.mockito:mockito-core:1.10.19'
-
 }

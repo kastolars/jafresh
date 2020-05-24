@@ -5,8 +5,10 @@ import android.database.Cursor
 import java.time.Instant
 import java.util.*
 
+// Represents a perishable item to be tracked
 class Item(val uuid: UUID, val name: String, val expirationDate: Date) {
 
+    // Constructs an item from a SQLite3 database result
     constructor(cursor: Cursor) : this(
         UUID.fromString(cursor.getString(cursor.getColumnIndex("uuid"))),
         cursor.getString(cursor.getColumnIndex("name")),
@@ -33,7 +35,7 @@ class Item(val uuid: UUID, val name: String, val expirationDate: Date) {
         return result
     }
 
-    // Create
+    // For insertion into databases
     fun getContentValues(): ContentValues {
         val cv = ContentValues()
         cv.put("uuid", uuid.toString())

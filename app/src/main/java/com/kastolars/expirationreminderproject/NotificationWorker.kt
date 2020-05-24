@@ -20,6 +20,7 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) :
     private val mNotificationTag = "JaFresh"
 
     override fun doWork(): Result {
+        Log.v(tag, "doWork called")
         return try {
             triggerNotification()
             val uuid = inputData.getString("uuid")
@@ -33,6 +34,7 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     private fun triggerNotification() {
+        Log.v(tag, "triggerNotification called")
         val name = inputData.getString("name")
         val message = "This is a reminder about your item $name"
         val notification = NotificationCompat.Builder(applicationContext, mNotificationTag)
@@ -51,6 +53,7 @@ class NotificationWorker(context: Context, workerParams: WorkerParameters) :
                 )
             ).build()!!
         val notificationManager = NotificationManagerCompat.from(applicationContext)
+        // Make sure there's a random id assigned
         val id = Random().nextInt()
         notificationManager.notify(id, notification)
         Log.d(tag, "Notification with id $id")

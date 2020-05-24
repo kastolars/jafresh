@@ -95,17 +95,13 @@ class WorkManagerWrapperTests {
             name,
             expirationDate
         )
-        val data = Data.Builder()
-            .putString("uuid", uuid.toString())
-            .build()
         val ids = workManagerWrapper.enqueueReminders(item, "testTag")
         val mockLifecycleOwner = mockLifecycleOwner()!!
         var isEnqueued = false
         var succeeded = false
         val stateHandler = object : WorkInfoStateHandler {
             override fun handle(workinfo: WorkInfo?) {
-                val state = workinfo?.state!!
-                when (state) {
+                when (workinfo?.state!!) {
                     WorkInfo.State.ENQUEUED -> {
                         isEnqueued = true
                         succeeded = false
@@ -114,6 +110,7 @@ class WorkManagerWrapperTests {
                         isEnqueued = false
                         succeeded = true
                     }
+                    else -> {}
                 }
             }
         }

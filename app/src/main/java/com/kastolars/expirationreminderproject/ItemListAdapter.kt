@@ -1,6 +1,7 @@
 package com.kastolars.expirationreminderproject
 
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +41,8 @@ class ItemListAdapter(private val items: ArrayList<Item>) :
         val today = Calendar.getInstance(TimeZone.getDefault()).time
         val millisBetween = date.time - today.time
         val daysBetween = TimeUnit.DAYS.convert(millisBetween, TimeUnit.MILLISECONDS)
+
+        // Set color depending on how close the item is to expiring
         val color = when {
             daysBetween > 1 -> {
                 Color.parseColor("#00B345")

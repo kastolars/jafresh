@@ -14,6 +14,7 @@ class WorkManagerWrapper(context: Context) {
     private val tag = "exprem" + WorkManagerWrapper::class.simpleName
     private val mWorkManager = WorkManager.getInstance(context)
 
+    // Enqueues all reminders relevant to given item
     fun enqueueReminders(
         item: Item,
         notificationTag: String
@@ -44,6 +45,7 @@ class WorkManagerWrapper(context: Context) {
         return workRequestIds
     }
 
+    // Enqueues a single reminder from the collection
     private fun enqueueReminder(
         today: Date,
         futureDate: Date,

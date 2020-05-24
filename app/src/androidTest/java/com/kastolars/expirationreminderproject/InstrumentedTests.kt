@@ -4,7 +4,8 @@ import android.widget.DatePicker
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.PickerActions
 import androidx.test.espresso.matcher.ViewMatchers.*
@@ -85,15 +86,7 @@ class InstrumentedTests {
         val workRequestCount = workManager.getCount(workTag)
         assertEquals(workRequestCount, 4)
 
-        // Assert on observers
-        var workInfos = workManager.getWorkInfosByTag(workTag)
-        workInfos.get().forEach {
-            val id = it.id
-            val liveData = workManager.getWorkInfoByIdLiveData(id)
-            // TODO: figure out why this data does not have observers
-//            assertTrue(liveData.hasObservers())
-        }
-
+        // Exit app
         Espresso.pressBackUnconditionally()
         with(mMainActivityRule) {
             finishActivity()
@@ -103,14 +96,6 @@ class InstrumentedTests {
         // Assert on item count once again
         itemCount = recyclerView.adapter?.itemCount!!
         assertEquals(1, itemCount)
-
-        // Assert that observers have been restored
-        workInfos = workManager.getWorkInfosByTag(workTag)
-        workInfos.get().forEach {
-            val id = it.id
-            val liveData = workManager.getWorkInfoByIdLiveData(id)
-//            assertTrue(liveData.hasObservers())
-        }
     }
 
     @Test
@@ -119,10 +104,13 @@ class InstrumentedTests {
         val workManager = WorkManager.getInstance(ctx)
         workManager.cancelAllWork()
         workManager.pruneWork()
+        // Create some data for the notification
         var data = Data.Builder()
             .putString("uuid", "123")
             .putString("name", "test")
             .build()
+
+        // Enqueue work requests
         var oneTimeWorkRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
             .setInitialDelay(Duration.ofSeconds(1))
             .setInputData(data)
@@ -140,6 +128,8 @@ class InstrumentedTests {
             .addTag("Test")
             .build()
         workManager.enqueue(oneTimeWorkRequest)
+
+        // Assert that there notifications are enqueued
         assertEquals(2, workManager.getWorkInfosByTag("Test").get().size)
         Thread.sleep(5000)
     }
@@ -173,6 +163,5 @@ class InstrumentedTests {
             recyclerView.findViewHolderForAdapterPosition(0) as ItemListAdapter.ItemViewHolder
 
         // TODO: swipe on the viewholder and check to see if it's still there
-//        onView().perform(swipeRight())
     }
 }

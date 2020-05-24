@@ -35,6 +35,7 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
         val imm = (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
 
+        // Check if there's an intent
         if (intent != null && intent.extras != null) {
             Log.v(tag, "Intent exists")
             year = intent.getIntExtra("year", year)
@@ -68,7 +69,7 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         }
 
         val mDoneButton: Button = findViewById(R.id.done_button)
-        var doneButtonAnim = TranslateAnimation(
+        val doneButtonAnim = TranslateAnimation(
             Animation.RELATIVE_TO_SELF, 1.0f, Animation.RELATIVE_TO_SELF, 0.0f,
             Animation.RELATIVE_TO_SELF, 1.0f, Animation.RELATIVE_TO_SELF, 0.0f
         )
@@ -114,6 +115,7 @@ class ItemActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     }
 
     private fun showFirstTimeAddItemDialog() {
+        Log.v(tag, "showFirstTimeAddItemDialog called")
         AlertDialog.Builder(this)
             .setTitle("Note")
             .setCancelable(false)

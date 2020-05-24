@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
         val itemCount = mAdapter.itemCount
         Log.d(tag, "Item count: $itemCount")
 
+        // Get work information
         val workInfos = mWorkManagerWrapper.getWorkInfosByTag(mNotificationTag).get()
         workInfos.forEach {
             val id = it.id
@@ -112,13 +113,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
             val intent = Intent(applicationContext, OcrCaptureActivity::class.java)
             startActivityForResult(intent, NEW_ITEM)
         }
-
-        // OCR Button 2
-//        val mOcr2Button: FloatingActionButton = findViewById(R.id.ocr2_launch_button)
-//        mOcr2Button.setOnClickListener {
-//            val intent = Intent(applicationContext, OcrCaptureActivity2::class.java)
-//            startActivity(intent)
-//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -154,11 +148,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
                 mDatabaseHelper.insertNotification(notification)
             }
 
+            // Attach observers
             workRequestUuids.forEach {
                 val liveData = mWorkManagerWrapper.getWorkInfoByIdLiveData(it)
                 liveData.observe(this, observer)
             }
 
+            // Populate database
             val id = mDatabaseHelper.insertItem(item)
             if (id == -1L) {
                 Toast.makeText(this, "Error occurred", Toast.LENGTH_LONG).show()
@@ -183,6 +179,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
     }
 
     private fun showFirstTimeAddItemDialog() {
+        Log.v(tag, "showFirstTimeAddItemDialog called")
         val img = ImageView(this)
         img.setImageResource(R.drawable.swipe)
         AlertDialog.Builder(this)
@@ -214,7 +211,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
         )
     }
 
+    // Handle state of reminders being observed
     override fun handle(workinfo: WorkInfo?) {
+        Log.v(tag, "handle called")
         when (workinfo?.state) {
             WorkInfo.State.SUCCEEDED -> {
                 val uuid = workinfo.id
@@ -237,6 +236,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
         }
     }
 
+    // Handles swiping on the element
     private val swipeItemCallback =
         object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
             override fun onMove(
@@ -244,10 +244,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
+                Log.v(tag, "onMove called")
                 return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                Log.v(tag, "onSwiped called")
                 val item = mItems.removeAt(viewHolder.adapterPosition)
                 mItems.sortBy { it.expirationDate }
                 mDatabaseHelper.deleteItem(item)
@@ -267,6 +269,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner,
                 actionState: Int,
                 isCurrentlyActive: Boolean
             ) {
+                Log.v(tag, "onChildDraw called")
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     val view = viewHolder.itemView
                     val p = Paint()

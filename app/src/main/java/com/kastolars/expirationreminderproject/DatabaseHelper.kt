@@ -128,6 +128,7 @@ class DatabaseHelper(
     }
 
     fun fetchNotificationsByItemUuid(itemUuid: UUID): ArrayList<Notification> {
+        Log.v(tag, "fetchNotificationsByItemUuid called")
         val notifications = ArrayList<Notification>()
         val db = readableDatabase
         val cursor = db.query(
@@ -174,6 +175,7 @@ class DatabaseHelper(
 
     // Read array
     fun fetchAllItems(): ArrayList<Item> {
+        Log.v(tag, "fetchAllItems called")
         val items = ArrayList<Item>()
         val query = "SELECT * FROM $itemTable"
         val db = readableDatabase

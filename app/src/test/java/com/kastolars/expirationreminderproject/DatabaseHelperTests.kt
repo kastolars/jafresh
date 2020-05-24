@@ -196,7 +196,7 @@ class DatabaseHelperTests {
     fun testFetchNotificationsByItemUuid() {
         // Arrange
         val itemUuid = UUID.randomUUID()
-        val notifications = (0..8).map{
+        val notifications = (0..8).map {
             val workRequestUuid = UUID.randomUUID()
             val notification =
                 Notification(
@@ -207,7 +207,8 @@ class DatabaseHelperTests {
             notification
         }
         // Act
-        val fetchedNotifications: ArrayList<Notification> = dbHelper.fetchNotificationsByItemUuid(itemUuid)
+        val fetchedNotifications: ArrayList<Notification> =
+            dbHelper.fetchNotificationsByItemUuid(itemUuid)
         // Assert
         notifications.forEach lit@{ a ->
             fetchedNotifications.forEach { b ->

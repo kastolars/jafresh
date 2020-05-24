@@ -1,14 +1,11 @@
 package com.kastolars.expirationreminderproject
 
-import android.content.res.Resources
-import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import java.util.*
 
 @Config(manifest = Config.NONE)
 @RunWith(AndroidJUnit4::class)
@@ -22,6 +19,7 @@ class OcrTests {
 
     @Test
     fun testCapture() {
+        // Arrange
         val testStrings = arrayOf(
             "05-14-20",
             "JUN 05 2020 A 18:3",
@@ -30,6 +28,7 @@ class OcrTests {
             "May 10, 2020"
         )
 
+        // Act & Assert
         for (s: String in testStrings) {
             assertTrue(captureRegex.matches(s))
         }
@@ -37,6 +36,7 @@ class OcrTests {
 
     @Test
     fun testExtractClean() {
+        // Arrange
         val testCases = arrayOf(
             TestCase("05-14-20", "05-14-20"),
             TestCase("JUN 05 2020 A 18:3", "JUN 05 2020"),
@@ -45,6 +45,7 @@ class OcrTests {
             TestCase("May 10, 2020", "May 10, 2020")
         )
 
+        // Act & Assert
         for (tc: TestCase in testCases) {
             val match = cleanRegex.find(tc.input as CharSequence)!!
             assertEquals(tc.expected, match.value)
@@ -53,6 +54,7 @@ class OcrTests {
 
     @Test
     fun testSplit() {
+        // Arrange
         val testCases = arrayOf(
             TestCase("05-14-20", listOf("05", "14", "20")),
             TestCase("JUN 05 2020", listOf("JUN", "05", "2020")),
@@ -61,6 +63,7 @@ class OcrTests {
             TestCase("May 10, 2020", listOf("May", "10", "2020"))
         )
 
+        // Act & Assert
         for (tc: TestCase in testCases) {
             val splits = (tc.input as CharSequence).split(Regex("\\W{1,2}"))
             assertEquals(splits, tc.expected as List<*>)
@@ -69,6 +72,7 @@ class OcrTests {
 
     @Test
     fun testToDate() {
+        // Arrange
         val testCases = arrayOf(
             TestCase("05-14-20", listOf(4, 14, 2020)),
             TestCase("JUN 05 2020", listOf(5, 5, 2020)),
@@ -80,7 +84,7 @@ class OcrTests {
             "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug",
             "sep", "oct", "nov", "dec"
         )
-        val cal = Calendar.getInstance(TimeZone.getDefault())
+        // Act & Assert
         for (tc: TestCase in testCases) {
             var year: Int? = null
             var month: Int? = null
@@ -120,16 +124,5 @@ class OcrTests {
             val actual = arrayOf(month, dayOfTheMonth, year).toList()
             assertEquals(tc.expected, actual)
         }
-    }
-
-    @Test
-    fun testBoxes(){
-        val deviceWidth = Resources.getSystem().displayMetrics.widthPixels
-        val deviceHeight = Resources.getSystem().displayMetrics.heightPixels
-        val left = deviceWidth / 6
-        val top = (deviceHeight / 2) - 200
-        val right = left + (deviceWidth / 6) * 4
-        val bottom = top + 200
-        val captureBox = Rect(left, top, right, bottom)
     }
 }
