@@ -4,13 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.graphics.Rect
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.util.valueIterator
@@ -30,10 +29,6 @@ class OcrCaptureActivity : AppCompatActivity() {
     lateinit var surfaceView: SurfaceView
     private lateinit var cameraSource: CameraSource
     private val tag = "exprem" + OcrCaptureActivity::class.java.simpleName
-    private lateinit var captureBox: Rect
-    private val deviceWidth = Resources.getSystem().displayMetrics.widthPixels
-    private val deviceHeight = Resources.getSystem().displayMetrics.heightPixels
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(tag, "onCreate called")
@@ -64,10 +59,12 @@ class OcrCaptureActivity : AppCompatActivity() {
     inner class OcrProcessor :
         Detector.Processor<TextBlock> {
 
+
         private val pattern = "([0-9]{1,2}|[a-zA-Z]{3,})\\W{0,2}[0-9]{1,2}\\W{0,2}[0-9]{2,4}"
         private val captureRegex = Regex(".*${pattern}.*")
         private val cleanRegex = Regex(pattern)
 
+        private var isTakingPicture = false
 
         override fun release() {
             Log.v(tag, "release called")
@@ -76,11 +73,12 @@ class OcrCaptureActivity : AppCompatActivity() {
         // Extract the date after detecting a matching result
         inner class PictureCallback(val item: TextBlock) : CameraSource.PictureCallback {
             override fun onPictureTaken(p0: ByteArray?) {
-                Log.v(tag, "onPictureTaken called")
-                val extractedText: MatchResult
+                isTakingPicture = false
+                var extractedText: MatchResult
                 try {
                     extractedText = extractClean(item.value)!!
                 } catch (e: NullPointerException) {
+                    Log.e(tag, "Failed to extract text: $e")
                     return
                 }
                 val date = toDate(extractedText.value)
@@ -100,33 +98,24 @@ class OcrCaptureActivity : AppCompatActivity() {
                         )}"
                     )
                     startActivityForResult(intent, 1)
-                    cameraSource.release()
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.post {
+                        cameraSource.release()
+                    }
                 }
-
             }
-
         }
 
         // Filters all text detections fo the ones that match the regex
         override fun receiveDetections(detections: Detector.Detections<TextBlock>?) {
-            Log.v(tag, "receiveDetections called")
-            try {
-                val items = detections?.detectedItems!!
-                if (items.size() != 0) {
-                    for (item: TextBlock in items.valueIterator()) {
-                        if (captureRegex.matches(item.value)) {
-                            cameraSource.takePicture(null, PictureCallback(item))
-                        }
+            val items = detections?.detectedItems!!
+            if (items.size() != 0) {
+                for (item: TextBlock in items.valueIterator()) {
+                    if (!isTakingPicture && captureRegex.matches(item.value)) {
+                        cameraSource.takePicture(null, PictureCallback(item))
+                        isTakingPicture = true
                     }
                 }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@OcrCaptureActivity,
-                    "Error occurred; please report this to maintainer",
-                    Toast.LENGTH_LONG
-                ).show()
-                Log.e(tag, "Error occurred: $e")
-                return
             }
         }
 
@@ -202,6 +191,7 @@ class OcrCaptureActivity : AppCompatActivity() {
             cameraSource.stop()
             finish()
         } else {
+            cameraSource.stop()
             finish()
             overridePendingTransition(0, 0)
             startActivity(intent)
@@ -242,7 +232,6 @@ class OcrCaptureActivity : AppCompatActivity() {
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {
             Log.v(tag, "surfaceDestroyed called")
-            cameraSource.release()
             cameraSource.stop()
         }
 
