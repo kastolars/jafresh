@@ -46,7 +46,7 @@ class OcrCaptureActivity : AppCompatActivity() {
             cameraSource = CameraSource.Builder(applicationContext, textRecognizer)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
                 .setRequestedPreviewSize(1980, 1080)
-                .setRequestedFps(30.0f)
+                .setRequestedFps(2.0f)
                 .setAutoFocusEnabled(true)
                 .build()
 
