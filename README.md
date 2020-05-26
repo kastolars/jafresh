@@ -13,6 +13,8 @@ Currently this project only works for Android devices; however a cross device pr
 To install the project, simply run `gradlew assembleDebug` at the root of the project. An APK file will be generated
 in `ExpirationReminderProject\app\build\outputs\apk\debug`, which can be installed on any Android device.
 
+There is also a downloadable apk in the releases section [here](https://github.com/kastolars/jafresh/releases).
+
 # Usage
 
 JaFresh has two reminder creation options. One is manual, where a user can input the name and expiration date
